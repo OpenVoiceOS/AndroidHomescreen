@@ -10,8 +10,6 @@ from mycroft.skills.skill_loader import load_skill_module
 from mycroft.util.log import getLogger
 from mycroft.skills.skill_manager import SkillManager
 
-__author__ = 'aix'
-
 LOGGER = getLogger(__name__)
 
 
@@ -27,7 +25,6 @@ class AndroidHomescreen(MycroftSkill):
         self.skill_manager = None
 
     def initialize(self):
-        self.add_event("pixabay.gallery.set_wallpaper", self.set_wallpaper)
         now = datetime.datetime.now()
         callback_time = (datetime.datetime(now.year, now.month, now.day,
                                            now.hour, now.minute) +
@@ -39,7 +36,7 @@ class AndroidHomescreen(MycroftSkill):
         root_dir = self.root_dir.rsplit('/', 1)[0]
         try:
             time_date_path = str(
-                root_dir) + "/mycroft-date-time.mycroftai/__init__.py"
+                root_dir) + "/skill-date-time.openvoiceos/__init__.py"
             time_date_id = "datetimeskill"
             datetimeskill = load_skill_module(time_date_path, time_date_id)
             from datetimeskill import TimeSkill
@@ -59,14 +56,16 @@ class AndroidHomescreen(MycroftSkill):
         self.gui['month_string'] = self.dt_skill.get_month_date()
         self.gui['year_string'] = self.dt_skill.get_year()
         self.gui['skillLauncher'] = self.androidSkillObject
-        self.gui.show_page('homescreen.qml')
+        self.gui.show_page('idle.qml')
 
     def handle_idle_update_time(self):
         self.gui['time_string'] = self.dt_skill.get_display_current_time()
 
     def generate_homescreen_icons(self):
         self.androidSkillsList.clear()
-        skill_directories = self.skill_manager._get_skill_directories()
+        dict_skill_directories = self.skill_manager._get_skill_directories()
+        print(dir(dict_skill_directories))
+        skill_directories = list(dict_skill_directories)
         print(skill_directories)
         for x in range(len(skill_directories)):
             if skill_directories[x] not in self.allSkills:
@@ -79,7 +78,6 @@ class AndroidHomescreen(MycroftSkill):
                 skill_android_file_resource) and path.isfile(
                     skill_android_file_resource):
                 with open(skill_android_file_resource) as f:
-                    print("I AM IN EXPAND ANDROID RESOURCE FILE")
                     expand_file = json.load(f)
                     icon_path = skill_dir + expand_file["android_icon"]
                     display_name = expand_file["android_name"]
@@ -110,12 +108,6 @@ class AndroidHomescreen(MycroftSkill):
     def update_dt(self):
         self.gui['time_string'] = self.dt_skill.get_display_current_time()
         self.gui['date_string'] = self.dt_skill.get_display_date()
-        
-    def set_wallpaper(self, message):
-        self.gui['wallpaper_path'] = message.data["imagePath"]
-    
-    def set_default_wallpaper(self, message):
-        self.gui['wallpaper_path'] = self.root_dir + "/ui/img/seaside.jpg"
 
     def stop(self):
         pass
